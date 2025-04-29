@@ -78,15 +78,27 @@ jobs:
         gcloud auth list
 
     # ------------------------------------------------------------------
-    # 7. Import website bucket into state if it already exists
+    # 7. Check if GCS bucket exists
     # ------------------------------------------------------------------
-    - name: Import GCS bucket into Terraform state (if needed)
+    - name: Check if GCS bucket exists
+      id: check_bucket
+      run: |
+        if gsutil ls -b gs://"$BUCKET_NAME" > /dev/null 2>&1; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Import GCS bucket into Terraform state
+      if: steps.check_bucket.outputs.exists == 'true'
       working-directory: terraform
       run: |
         terraform init -input=false
         terraform import -input=false \
           google_storage_bucket.site_bucket "$BUCKET_NAME" || true
-
+    - name: Skip import (bucket not found)
+      if: steps.check_bucket.outputs.exists != 'true'
+      run: echo "Bucket $BUCKET_NAME does not exist yet; Terraform will create it on apply."
+      
     # ------------------------------------------------------------------
     # 8. Plan + Apply using USER creds
     # ------------------------------------------------------------------
