@@ -62,7 +62,7 @@ jobs:
     #had to do this shell and env to ensure newlines and stuff got preserved
       shell: bash
       env:
-      GCP_KEY_JSON: ${{ secrets.USER_SERVICE_KEY }}
+        GCP_KEY_JSON: ${{ secrets.USER_SERVICE_KEY }}
       run: |
         printf '%s' "$GCP_KEY_JSON" > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
