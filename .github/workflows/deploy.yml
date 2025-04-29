@@ -78,18 +78,9 @@ jobs:
       run: |
         gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
         gcloud auth list
-
-    
-    # Authenticate gsutil with the same service-account
-    # ------------------------------------------------------------------
-    - name: Authenticate gsutil and ADC
-      shell: bash
+ 
+    - name: Override SDK auth
       run: |
-        # Already activated for gcloud CLI; now set up Application Default Credentials
-        gcloud auth application-default activate-service-account \
-          --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
-
-        # Ensure all Cloud SDK commands (including gsutil) use that key
         echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$GOOGLE_APPLICATION_CREDENTIALS" \
           >> $GITHUB_ENV
 
