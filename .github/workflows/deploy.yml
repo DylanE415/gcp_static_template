@@ -68,8 +68,6 @@ jobs:
         printf '%s' "$GCP_KEY_JSON" > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
 
-    - name: Dump first lines of key
-      run: head -n5 "$HOME/user-key.json"
 
     # Optional: Validate account
     - name: Validate GCP identity
@@ -98,7 +96,7 @@ jobs:
     - name: Skip import (bucket not found)
       if: steps.check_bucket.outputs.exists != 'true'
       run: echo "Bucket $BUCKET_NAME does not exist yet; Terraform will create it on apply."
-      
+
     # ------------------------------------------------------------------
     # 8. Plan + Apply using USER creds
     # ------------------------------------------------------------------
