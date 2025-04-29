@@ -8,23 +8,33 @@ terraform {
   }
 }
 
-
 resource "google_storage_bucket" "site_bucket" {
-    name = var.bucket_name
-    location = "US"
+  name     = var.bucket_name
+  location = "US"
+
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+
+  uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket_object" "site_src" {
-    name = "index.html"
-    source = "../build/index.html"
-    bucket= google_storage_bucket.site_bucket.name
+  name   = "index.html"
+  source = "../build/index.html"
+  bucket = google_storage_bucket.site_bucket.name
 }
 
-resource "google_storage_object_access_control" "public_read"{
-    object= google_storage_bucket_object.site_src.name
-    bucket = google_storage_bucket.site_bucket.name
+# Remove this old block:
+# resource "google_storage_object_access_control" "public_read" { … }
 
-    role = "READER"
-    entity= "allUsers"
+# Add this instead:
+resource "google_storage_bucket_iam_binding" "public_read" {
+  bucket = google_storage_bucket.site_bucket.name
+  role   = "roles/storage.objectViewer"
 
+  members = [
+    "allUsers",
+  ]
 }
