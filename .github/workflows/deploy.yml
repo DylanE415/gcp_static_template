@@ -56,7 +56,7 @@ jobs:
     # ------------------------------------------------------------------
     - name: Configure USER GCP credentials
       run: |
-        echo "${{ secrets.USER_GCP_SA_KEY }}" | base64 -d > $HOME/user-key.json
+        echo "${{ secrets.USER_SERVICE_KEY }}" | base64 -d > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
 
     # Optional: Validate account
