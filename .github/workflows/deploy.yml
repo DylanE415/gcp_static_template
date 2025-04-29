@@ -1,0 +1,100 @@
+name: Deploy Site to GCS + Cloud CDN
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ------------------------------------------------------------------
+    # 2. Setup Node and build the static site
+    # ------------------------------------------------------------------
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: npm
+        cache-dependency-path: build/package-lock.json
+
+    - name: Install dependencies and build
+      working-directory: build
+      run: |
+        npm install
+        npm run build
+
+    # ------------------------------------------------------------------
+    # 3. Decode Cloudgo SA key → creds for *Terraform backend* (state)
+    # ------------------------------------------------------------------
+    - name: Set Cloudgo AWS credentials for Terraform remote backend
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.CLOUDGO_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.CLOUDGO_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+        echo "AWS_REGION=us-east-2" >> $GITHUB_ENV
+
+    # ------------------------------------------------------------------
+    # 4. Install Terraform CLI
+    # ------------------------------------------------------------------
+    - name: Setup Terraform CLI
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    # ------------------------------------------------------------------
+    # 5. Terraform init (uses Cloudgo creds to reach cloudgo-state-storage)
+    # ------------------------------------------------------------------
+    - name: Terraform Init (backend)
+      working-directory: terraform
+      run: terraform init -input=false
+
+    # ------------------------------------------------------------------
+    # 6. Switch to **user** GCP creds for the actual deployment
+    # ------------------------------------------------------------------
+    - name: Configure USER GCP credentials
+      run: |
+        echo "${{ secrets.USER_GCP_SA_KEY }}" | base64 -d > $HOME/user-key.json
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
+
+    # Optional: Validate account
+    - name: Validate GCP identity
+      run: gcloud auth activate-service-account --key-file "$GOOGLE_APPLICATION_CREDENTIALS" && gcloud auth list
+
+    # ------------------------------------------------------------------
+    # 7. Import website bucket into state if it already exists
+    # ------------------------------------------------------------------
+    - name: Import GCS bucket into Terraform state (if needed)
+      working-directory: terraform
+      env:
+        BUCKET_NAME: ${{ env.BUCKET_NAME }}
+      run: |
+        # ensure init ran with backend creds
+        terraform init -input=false
+
+        if ! terraform state list google_storage_bucket.site_bucket >/dev/null 2>&1; then
+          echo "Bucket not in state, importing..."
+          terraform import -input=false google_storage_bucket.site_bucket "$BUCKET_NAME" || true
+        else
+          echo "Bucket already in state."
+        fi
+
+    # ------------------------------------------------------------------
+    # 8. Plan + Apply using USER creds
+    # ------------------------------------------------------------------
+    - name: Terraform Plan
+      working-directory: terraform
+      run: terraform plan
+
+    - name: Terraform Apply
+      working-directory: terraform
+      run: terraform apply -auto-approve
+
+    # ------------------------------------------------------------------
+    # 9. Upload build artefacts to GCS
+    # ------------------------------------------------------------------
+    - name: Sync build folder to GCS
+      run: |
+        gsutil -m rsync -d build/dist gs://${{ env.BUCKET_NAME }}
