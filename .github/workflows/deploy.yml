@@ -73,11 +73,26 @@ jobs:
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
 
 
-    # Optional: Validate account
+    # Validate account
     - name: Validate GCP identity
       run: |
         gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
         gcloud auth list
+
+    
+    # Authenticate gsutil with the same service-account
+    # ------------------------------------------------------------------
+    - name: Authenticate gsutil and ADC
+      shell: bash
+      run: |
+        # Already activated for gcloud CLI; now set up Application Default Credentials
+        gcloud auth application-default activate-service-account \
+          --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+
+        # Ensure all Cloud SDK commands (including gsutil) use that key
+        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$GOOGLE_APPLICATION_CREDENTIALS" \
+          >> $GITHUB_ENV
+
 
     # ------------------------------------------------------------------
     # 7. Check if GCS bucket exists
