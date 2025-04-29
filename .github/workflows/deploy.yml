@@ -51,14 +51,18 @@ jobs:
     - name: Setup Terraform CLI
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: 1.5.0
+        terraform_version: 1.5.0 
 
     # ------------------------------------------------------------------
     # 5. Terraform init (uses Cloudgo creds to reach cloudgo-state-storage)
     # ------------------------------------------------------------------
     - name: Terraform Init (backend)
       working-directory: terraform
-      run: terraform init -input=false
+      run: |
+        terraform init \
+          -input=false \
+          -reconfigure \
+          -force-copy
 
     # ------------------------------------------------------------------
     # 6. Switch to **user** GCP creds for the actual deployment
