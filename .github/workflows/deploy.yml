@@ -7,6 +7,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      BUCKET_NAME: ${{ secrets.USER_BUCKET_NAME }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -79,18 +82,10 @@ jobs:
     # ------------------------------------------------------------------
     - name: Import GCS bucket into Terraform state (if needed)
       working-directory: terraform
-      env:
-        BUCKET_NAME: ${{ env.BUCKET_NAME }}
       run: |
-        # ensure init ran with backend creds
         terraform init -input=false
-
-        if ! terraform state list google_storage_bucket.site_bucket >/dev/null 2>&1; then
-          echo "Bucket not in state, importing..."
-          terraform import -input=false google_storage_bucket.site_bucket "$BUCKET_NAME" || true
-        else
-          echo "Bucket already in state."
-        fi
+        terraform import -input=false \
+          google_storage_bucket.site_bucket "$BUCKET_NAME" || true
 
     # ------------------------------------------------------------------
     # 8. Plan + Apply using USER creds
@@ -108,4 +103,4 @@ jobs:
     # ------------------------------------------------------------------
     - name: Sync build folder to GCS
       run: |
-        gsutil -m rsync -d build/dist gs://${{ env.BUCKET_NAME }}
+        gsutil -m rsync -d build/dist gs://$BUCKET_NAME
