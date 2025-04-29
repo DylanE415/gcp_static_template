@@ -27,8 +27,6 @@ jobs:
         npm install
         npm run build
 
-    - name: Dump first lines of key
-      run: head -n5 "$HOME/user-key.json"
 
 
     # ------------------------------------------------------------------
@@ -66,6 +64,9 @@ jobs:
       run: |
         printf '%s' "$GCP_KEY_JSON" > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
+
+    - name: Dump first lines of key
+      run: head -n5 "$HOME/user-key.json"
 
     # Optional: Validate account
     - name: Validate GCP identity
