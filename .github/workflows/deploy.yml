@@ -79,10 +79,6 @@ jobs:
         gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
         gcloud auth list
  
-    - name: Override SDK auth
-      run: |
-        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$GOOGLE_APPLICATION_CREDENTIALS" \
-          >> $GITHUB_ENV
 
 
     # ------------------------------------------------------------------
@@ -122,5 +118,8 @@ jobs:
     # 9. Upload build artefacts to GCS
     # ------------------------------------------------------------------
     - name: Sync build folder to GCS
+      shell: bash
       run: |
-        gsutil -m rsync -d build/dist gs://$BUCKET_NAME
+        gsutil -o "Credentials:gs_service_key_file=$GOOGLE_APPLICATION_CREDENTIALS" \
+              -m rsync -d build/dist gs://$BUCKET_NAME
+
