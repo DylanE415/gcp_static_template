@@ -56,12 +56,14 @@ jobs:
     # ------------------------------------------------------------------
     - name: Configure USER GCP credentials
       run: |
-        echo "${{ secrets.USER_SERVICE_KEY }}" | base64 -d > $HOME/user-key.json
+        printf '%s' "${{ secrets.USER_GCP_SA_KEY }}" > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
 
     # Optional: Validate account
     - name: Validate GCP identity
-      run: gcloud auth activate-service-account --key-file "$GOOGLE_APPLICATION_CREDENTIALS" && gcloud auth list
+      run: |
+        gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+        gcloud auth list
 
     # ------------------------------------------------------------------
     # 7. Import website bucket into state if it already exists
