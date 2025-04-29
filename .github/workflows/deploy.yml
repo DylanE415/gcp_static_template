@@ -7,12 +7,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      BUCKET_NAME: ${{ secrets.USER_BUCKET_NAME }}
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Read bucket_name from tfvars
+      working-directory: terraform
+      run: |
+        bucket=$(grep '^\s*bucket_name' terraform.tfvars \
+                  | sed -E 's/.*= *"([^"]+)".*/\1/')
+        echo "BUCKET_NAME=$bucket" >> $GITHUB_ENV
+
+    - name: Debug bucket
+      run: echo "Using bucket: $BUCKET_NAME"
 
     # ------------------------------------------------------------------
     # 2. Setup Node and build the static site
