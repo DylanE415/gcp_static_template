@@ -27,6 +27,10 @@ jobs:
         npm install
         npm run build
 
+    - name: Dump first lines of key
+      run: head -n5 "$HOME/user-key.json"
+
+
     # ------------------------------------------------------------------
     # 3. Decode Cloudgo SA key → creds for *Terraform backend* (state)
     # ------------------------------------------------------------------
@@ -55,8 +59,12 @@ jobs:
     # 6. Switch to **user** GCP creds for the actual deployment
     # ------------------------------------------------------------------
     - name: Configure USER GCP credentials
+    #had to do this shell and env to ensure newlines and stuff got preserved
+      shell: bash
+      env:
+      GCP_KEY_JSON: ${{ secrets.USER_SERVICE_KEY }}
       run: |
-        printf '%s' "${{ secrets.USER_SERVICE_KEY }}" > $HOME/user-key.json
+        printf '%s' "$GCP_KEY_JSON" > $HOME/user-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/user-key.json" >> $GITHUB_ENV
 
     # Optional: Validate account
