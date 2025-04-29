@@ -18,9 +18,6 @@ jobs:
                   | sed -E 's/.*= *"([^"]+)".*/\1/')
         echo "BUCKET_NAME=$bucket" >> $GITHUB_ENV
 
-    - name: Debug bucket
-      run: echo "Using bucket: $BUCKET_NAME"
-
     # ------------------------------------------------------------------
     # 2. Setup Node and build the static site
     # ------------------------------------------------------------------
