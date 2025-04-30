@@ -13,8 +13,8 @@ resource "google_storage_bucket" "site_bucket" {
   location = "US"
 
   website {
-    main_page_suffix = "index.html"
-    not_found_page   = "404.html"
+    main_page_suffix = "dist/index.html"
+    not_found_page   = "dist/404.html"
   }
 
   uniform_bucket_level_access = true
