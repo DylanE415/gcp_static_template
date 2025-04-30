@@ -121,14 +121,14 @@ jobs:
     # ------------------------------------------------------------------
     # 9. Upload build artefacts to GCS
     # ------------------------------------------------------------------
+    # (Make sure you’ve already authenticated via google-github-actions/auth@v1 / setup-gcloud@v1)
+
     - name: Sync build folder to GCS
       uses: google-github-actions/upload-cloud-storage@v1
       with:
-        path: build/dist/**
-        destination: gs://${{ env.BUCKET_NAME }}
-        # recursively upload all files under build/dist
-        recursive: true
-        # optionally make objects publicly readable
-        metadata: |
+        path: build/dist
+        destination: ${{ env.BUCKET_NAME }}
+        predefinedAcl: publicRead
+        gzip: true
+        headers: |
           cache-control:public, max-age=3600
-        acl: public-read
