@@ -20,16 +20,8 @@ resource "google_storage_bucket" "site_bucket" {
   uniform_bucket_level_access = true
 }
 
-resource "google_storage_bucket_object" "site_src" {
-  name   = "index.html"
-  source = "../build/index.html"
-  bucket = google_storage_bucket.site_bucket.name
-}
 
-# Remove this old block:
-# resource "google_storage_object_access_control" "public_read" { … }
 
-# Add this instead:
 resource "google_storage_bucket_iam_binding" "public_read" {
   bucket = google_storage_bucket.site_bucket.name
   role   = "roles/storage.objectViewer"
