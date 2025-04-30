@@ -128,7 +128,6 @@ jobs:
       with:
         path: build/dist
         destination: ${{ env.BUCKET_NAME }}
-        predefinedAcl: publicRead
         gzip: true
         headers: |
           cache-control:public, max-age=3600
