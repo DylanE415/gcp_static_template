@@ -123,6 +123,11 @@ jobs:
     # ------------------------------------------------------------------
     # (Make sure you’ve already authenticated via google-github-actions/auth@v1 / setup-gcloud@v1)
 
+    - name: Delete existing objects
+      run: |
+       gsutil -m rm -r gs://$BUCKET_NAME/** || true  
+
+
     - name: Sync build folder to GCS
       uses: google-github-actions/upload-cloud-storage@v1
       with:
