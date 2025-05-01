@@ -13,8 +13,8 @@ resource "google_storage_bucket" "site_bucket" {
   location = "US"
 
   website {
-    main_page_suffix = "index.html"
-    not_found_page   = "index.html"
+    main_page_suffix = "dylane415-bu-storefront-demo-cloudgo/index.html"
+    not_found_page   = "dylane415-bu-storefront-demo-cloudgo/index.html"
   }
 
   uniform_bucket_level_access = true

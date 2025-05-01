@@ -137,4 +137,4 @@ jobs:
         destination: ${{ env.BUCKET_NAME }}
         gzip: true
         headers: |
-          cache-control: public, max-age=3600
+          cache-control: no-cache
