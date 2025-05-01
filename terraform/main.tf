@@ -31,16 +31,3 @@ resource "google_storage_bucket_iam_binding" "public_read" {
   ]
 }
 
-# Redirect  /<bucket-name>/index.html  →  /
-resource "google_storage_bucket_object" "root_index_redirect" {
-  bucket = google_storage_bucket.site_bucket.name
-
-  # Object key is  <bucket-name>/index.html
-  # (exactly what the browser requests after the leading slash)
-  name   = "${google_storage_bucket.site_bucket.name}/index.html"
-
-  content          = ""              # Empty placeholder
-  content_type     = "text/html"
-  website_redirect = "/"             # 301 Location: /
-}
-  #

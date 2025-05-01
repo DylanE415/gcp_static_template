@@ -132,6 +132,7 @@ jobs:
       uses: google-github-actions/upload-cloud-storage@v1
       with:
         path: build/dist/**
+        glob: true  
         parent: false
         destination: ${{ env.BUCKET_NAME }}
         gzip: true
