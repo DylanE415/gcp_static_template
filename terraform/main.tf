@@ -54,6 +54,11 @@ resource "google_compute_backend_bucket" "site_backend" {
     negative_caching  = true
     serve_while_stale = 86400
   }
+  custom_request_header {
+    name  = "Host"
+    value = "${var.bucket_name}.storage.googleapis.com"
+  }
+
 }
 
 # 3. URL map → route ALL requests to the backend bucket and rewrite to /index.html
