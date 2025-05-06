@@ -54,10 +54,7 @@ resource "google_compute_backend_bucket" "site_backend" {
     negative_caching  = true
     serve_while_stale = 86400
   }
-  custom_request_header {
-    name  = "Host"
-    value = "${var.bucket_name}.storage.googleapis.com"
-  }
+  
 
 }
 
@@ -69,6 +66,12 @@ resource "google_compute_url_map" "site_url_map" {
   default_route_action {
     url_rewrite {
       path_prefix_rewrite = "/index.html"
+    }
+
+    # ← here’s the Host override
+    request_headers_to_add {
+      header_name  = "Host"
+      header_value = "${var.bucket_name}.storage.googleapis.com"
     }
   }
 }
