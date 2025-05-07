@@ -1,12 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"   
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.0"          
-    }
-  }
-}
 
 resource "google_storage_bucket" "site_bucket" {
   name     = var.bucket_name
@@ -41,47 +32,32 @@ resource "google_compute_global_address" "site_ip" {
 
 # 2. Backend bucket (connects the LB → your GCS bucket) with CDN enabled
 resource "google_compute_backend_bucket" "site_backend" {
-  provider        = google-beta.beta
+  provider    = google-beta.beta
   name        = "${var.bucket_name}-backend"
   bucket_name = google_storage_bucket.site_bucket.name
+
   enable_cdn  = true
-  
-  custom_request_header {
-    name  = "Host"
-    value = "${var.bucket_name}.storage.googleapis.com"
-  }
-  # Optional: tune cache‐control behavior
-  cdn_policy {
-    cache_mode        = "CACHE_ALL_STATIC"
-    client_ttl        = 3600      # browser max‐age
-    default_ttl       = 3600      # CDN edge TTL
-    max_ttl           = 86400
-    negative_caching  = true
-    serve_while_stale = 86400
-  }
-  
 
 }
 
+
+
+
+
 # 3. URL map → route ALL requests to the backend bucket and rewrite to /index.html
 resource "google_compute_url_map" "site_url_map" {
-  provider        = google-beta.beta
   name            = "${var.bucket_name}-url-map"
   default_service = google_compute_backend_bucket.site_backend.id
 
   default_route_action {
-    # (optional) SPA fallback
-    url_rewrite {
-      path_prefix_rewrite = "/index.html"
-    }
 
-    request_headers_to_add {
-      header_name  = "Host"
-      header_value = "${var.bucket_name}.storage.googleapis.com"
+    # SPA fallback (or root → index.html)
+    url_rewrite {
+      path_prefix_rewrite = "/"
     }
   }
-  
 }
+
 
 # 4. HTTP proxy → ties the URL map to the LB front-end on HTTP
 resource "google_compute_target_http_proxy" "site_http_proxy" {
