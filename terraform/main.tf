@@ -46,7 +46,7 @@ resource "google_compute_backend_bucket" "site_backend" {
 
 # 3. URL map → route ALL requests to the backend bucket and rewrite to /index.html
 resource "google_compute_url_map" "site_url_map" {
-  provider        = google-beta
+  provider        = google-beta.beta
   name            = "${var.bucket_name}-url-map"
   default_service = google_compute_backend_bucket.site_backend.id
 
