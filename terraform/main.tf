@@ -49,12 +49,18 @@ resource "google_compute_url_map" "site_url_map" {
   name            = "${var.bucket_name}-url-map"
   default_service = google_compute_backend_bucket.site_backend.id
 
-  default_route_action {
+  route_rules {
+    priority = 0
 
-    # SPA fallback (or root → index.html)
-    url_rewrite {
-      path_prefix_rewrite = "/"
+    match_rules {
+      path_template_match = "/**"        # match every path
     }
+
+    url_rewrite {
+      path_template_rewrite = "/index.html"
+    }
+
+    service = google_compute_backend_bucket.site_backend.id
   }
 }
 
