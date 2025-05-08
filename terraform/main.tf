@@ -64,14 +64,18 @@ resource "google_compute_url_map" "site_url_map" {
     default_service = google_compute_backend_bucket.site_backend.id
 
     # Match ONLY the bare slash
+    # rewrite only “/” to “/index.html” (no redirect)
     path_rule {
-      paths = ["/"]
+      paths = ["/"]                       # match the bare slash
 
-      url_redirect {
-        path_redirect          = "/index.html"
-        redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
-        strip_query            = false
+      route_action {
+        url_rewrite {
+          path_prefix_rewrite = "/index.html"
+          # ^ replaces the matched prefix “/” with “/index.html”
+        }
       }
+
+      # service = google_compute_backend_bucket.site_backend.id  # optional
     }
   }
 }
