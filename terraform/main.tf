@@ -74,8 +74,8 @@ resource "google_compute_url_map" "site_url_map" {
           # ^ replaces the matched prefix “/” with “/index.html”
         }
       }
-
-      # service = google_compute_backend_bucket.site_backend.id  # optional
+      # tell the LB what actually serves the request
+      service = google_compute_backend_bucket.site_backend.id  
     }
   }
 }
