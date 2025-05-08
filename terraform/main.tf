@@ -46,24 +46,36 @@ resource "google_compute_backend_bucket" "site_backend" {
 
 # 3. URL map → route ALL requests to the backend bucket and rewrite to /index.html
 resource "google_compute_url_map" "site_url_map" {
-  provider        = google-beta.beta
   name            = "${var.bucket_name}-url-map"
+  provider        = google-beta.beta    
   default_service = google_compute_backend_bucket.site_backend.id
 
-  route_rules {
-    priority = 0                       # ← highest priority
+  # Tell the URL-map which matcher handles all hosts
+  host_rule {
+    hosts        = ["*"]
+    path_matcher = "root-and-assets"
+  }
 
-    match_rules {
-      full_path_match = "/"            # only the bare root gets rewritten
+  # One matcher that
+  #   • redirects exactly “/” → “/index.html” (301)
+  #   • lets every other path fall through to the backend bucket
+  path_matcher {
+    name            = "root-and-assets"
+    default_service = google_compute_backend_bucket.site_backend.id
+
+    # Match ONLY the bare slash
+    path_rule {
+      paths = ["/"]
+
+      url_redirect {
+        path_redirect          = "/index.html"
+        redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+        strip_query            = false
+      }
     }
-
-    url_rewrite {
-      path_prefix_rewrite = "/index.html"
-    }
-
-    service = google_compute_backend_bucket.site_backend.id
   }
 }
+
 
 
 # 4. HTTP proxy → ties the URL map to the LB front-end on HTTP
